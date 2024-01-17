@@ -7,9 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://safekey-thth.onrender.com',
-        changeOrigin: true,
-        secure: false
+        target: 'http://localhost:3000',
+        changeOrigin: true
       }
     }
   },
