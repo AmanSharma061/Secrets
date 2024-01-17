@@ -36,7 +36,6 @@ Follow the steps below to set up and run the SafeKey.io application on your loca
 
 ### Installation
 
-1. Clone the repository:
+1. Download the Code and Extract the Zip📂 folder
 
-   ```bash
-   git clone https://github.com/your-username/SafeKey.io.git
+2. Open the Extracted Folder 
