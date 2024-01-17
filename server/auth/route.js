@@ -152,18 +152,23 @@ router.post('/api/secrets/post', checker, async (req, res) => {
     const id = data.user
     let user = await User.findById(id)
     let googleuser = await GoogleUser.findById(id)
+    const check= await Secret.findOne({user:id})
+    if(check){
+      return res.status(422).json({error:"You have already posted a secret"})
+    }
     if (user && googleuser) {
       googleuser = await GoogleUser.findByIdAndDelete(id)
     }
-    if (googleuser?.secretsCount >= 1) {
+    if (googleuser?.secretsCount >= 1 || user?.secretsCount >= 1) {
       return res.status(422).json({ error: 'You have exceeded the limit' })
     } else {
-      googleuser = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 1 })
+      if (user) {
+        user.secretsCount = user.secretsCount + 1
+      } else {
+        googleuser.secretsCount = googleuser.secretsCount + 1
+      }
     }
 
-    if (user?.secretsCount >= 1) {
-      return res.status(422).json({ error: 'You have exceeded the limit' })
-    }
     const secret = new Secret({
       secret: data.secret,
       name: data.name,
@@ -172,19 +177,8 @@ router.post('/api/secrets/post', checker, async (req, res) => {
     })
 
     const aaa = await secret.save()
-    await user.save()
-
-    if (user?.secretsCount === 0) {
-      user = await User.findByIdAndUpdate(id, { secretsCount: 1 })
-    } else {
-      user = await User.findByIdAndUpdate(id, { secretsCount: 0 })
-    }
-    if (googleuser?.secretsCount === 0) {
-      user = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 1 })
-    } else {
-      user = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 0 })
-    }
     await user?.save()
+
     await googleuser?.save()
 
     // await Secret.create(data.secrets)
