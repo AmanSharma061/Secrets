@@ -8,7 +8,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'https://safekey-thth.onrender.com',
-        changeOrigin: true
+        changeOrigin: true,
+        secure: false
       }
     }
   },
