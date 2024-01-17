@@ -1,0 +1,7 @@
+/ # Ignore .eng files
+*.eng
+
+# Ignore the node_modules directory
+node_modules/
+# Ignore config.env files
+config.env
