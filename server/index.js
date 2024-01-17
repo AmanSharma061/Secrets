@@ -6,7 +6,7 @@ import cors from 'cors'
 const app = new express()
 app.use(cors())
 app.use(express.json())
-
+app.use(express.static(process.cwd() + '/dist'))
 app.use(router)
 const port = process.env.PORT || 3000
 connectTodatabase()

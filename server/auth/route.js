@@ -11,9 +11,7 @@ import Otp from '../database/models/otpModel.js'
 const resetTokens = {}
 const router = express.Router()
 
-router.get('/', (req, res) => {
-  res.send('hello')
-})
+
 const checker = async (req, res, next) => {
   await connectTodatabase()
   const data = await req.body
