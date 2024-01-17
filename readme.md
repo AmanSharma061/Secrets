@@ -45,13 +45,15 @@ Follow the steps below to set up and run the SafeKey.io application on your loca
 5. After that run the below given command
    ```bash
    npm install
-Then type the next command      
+6. Then type the next command    
    ```bash
    nodemon app.js
-6. After that your server will be live and the in the second terminal type the below given commands
+
+7. After that your server will be live and the in the second terminal type the below given commands
    ```bash
    cd client
-Then type this command
+8. Then type this command
    ```bash
    npm run dev
-7. After this you will get the link in your terminal follow the link to visit the webApp      
+
+9. After this you will get the link in your terminal follow the link to visit the webApp      
