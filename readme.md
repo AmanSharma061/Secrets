@@ -37,5 +37,19 @@ Follow the steps below to set up and run the SafeKey.io application on your loca
 ### Installation
 
 1. Download the Code and Extract the Zip📂 folder
-
-2. Open the Extracted Folder 
+2. Open the Extracted Folder in Vs code Or Any Code Editor
+3. Open two separate terminals
+4. In First Terminal type the below command
+    ```bash
+    cd server
+5. After that run the below given command
+   ```bash
+   npm install    
+   ```bash
+   nodemon app.js
+6. After that your server will be live and the in the second terminal type the below given commands
+   ```bash
+   cd client
+   ```bash
+   npm run dev
+7. After this you will get the link in your terminal follow the link to visit the webApp      
