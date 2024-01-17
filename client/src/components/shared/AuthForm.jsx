@@ -1,10 +1,14 @@
 // AuthForm.js
 import { LOGIN } from '@/lib/actions/signIn'
+// import { GoogleLogin } from '@react-oauth/google'
 import { postFormData } from '@/lib/actions/signUp'
+import { GoogleLogin, useGoogleOneTapLogin } from '@react-oauth/google'
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
+import { jwtDecode } from 'jwt-decode'
 import { handler } from 'tailwindcss-animate'
+import axios from 'axios'
 
 const AuthForm = () => {
   const navigate = useNavigate()
@@ -20,21 +24,13 @@ const AuthForm = () => {
     setIsSignup(prev => !prev)
   }
 
-  const handleGoogleSignIn = () => {
-    // Handle Google sign-in
-    console.log('Google Sign In')
-  }
-
-  const handleGoogleSignUp = () => {
-    // Handle Google sign-up
-    console.log('Google Sign Up')
-  }
   const handler = e => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
   }
+
   const signUphandler = async e => {
     e.preventDefault()
 
@@ -46,23 +42,26 @@ const AuthForm = () => {
       closeOnClick: true,
       draggable: true
     })
-    const timeOut = setTimeout(() => {
-      setFormData({
-        name: '',
-        email: '',
-        password: '',
-        cpassword: ''
-      })
-      
+
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      cpassword: ''
+    })
+
+    const fun = setTimeout(() => {
       setIsSignup(prev => !prev)
-    }, 1000)
-    clearTimeout(timeOut)
-    // clearTimeout(timeOut)
+    }, 800)
+    fun()
+
+    clearTimeout(fun)
   }
+
   const loginHandler = async e => {
     e.preventDefault()
     const res = await LOGIN(formData)
-    console.log(res)
+
     if (res.error) {
       toast.error(res.error, {
         position: 'top-center',
@@ -80,7 +79,36 @@ const AuthForm = () => {
         draggable: true
       })
       localStorage.setItem('token', JSON.stringify(res))
-      navigate('/')
+      const fun = setTimeout(() => {
+        navigate('/')
+      }, 800)
+      fun()
+
+      clearTimeout(fun)
+    }
+  }
+  const loginSuccessHandler = async res => {
+    const response = jwtDecode(res?.credential)
+    const { email, name } = response
+
+    const got = await axios.post('/api/auth/googleLogin', {
+      email,
+      name
+    })
+    if (got.data.message === 'Successfully signed in') {
+      toast.success('Login Successfull', {
+        position: 'top-center',
+        autoClose: 800,
+        hideProgressBar: false,
+        closeOnClick: true,
+        draggable: true
+      })
+      localStorage.setItem('token', JSON.stringify(got.data))
+      const fun = setTimeout(() => {
+        navigate('/')
+      }, 800)
+      fun()
+      clearTimeout(fun)
     }
   }
 
@@ -106,7 +134,6 @@ const AuthForm = () => {
             </>
           )}{' '}
         </h2>
-
         <form onSubmit={isSignup ? signUphandler : loginHandler}>
           {isSignup && (
             <div className='mb-4 text-white'>
@@ -200,30 +227,15 @@ const AuthForm = () => {
             {isSignup ? 'Sign Up' : 'Login'}{' '}
           </button>
         </form>
-
-        <div className='mt-4'>
-          {' '}
-          {!isSignup && (
-            <button
-              type='button'
-              className='w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700'
-              onClick={handleGoogleSignIn}
-            >
-              Sign In with Google
-            </button>
-          )}
-          {isSignup && (
-            <button
-              type='button'
-              className='w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-700'
-              onClick={handleGoogleSignUp}
-            >
-              Sign Up with Google
-            </button>
-          )}{' '}
-        </div>
-
-        <p className='mt-4 text-gray-300 text-sm'>
+        <div className='w-full py-2 flex gap-x-4   text-black border-gray-300 rounded-md'>
+          <GoogleLogin
+           width={30}
+            onSuccess={loginSuccessHandler}
+            onError={() => {
+              console.log('Login Failed')
+            }}
+          />
+           <p className='my-auto text-gray-300 text-sm'>
           {' '}
           {isSignup ? 'Already have an account?' : "Don't have an account?"}
           <span
@@ -234,6 +246,9 @@ const AuthForm = () => {
             {isSignup ? 'Login' : 'Sign Up'}{' '}
           </span>
         </p>
+          </div>
+    
+       
       </div>
     </div>
   )

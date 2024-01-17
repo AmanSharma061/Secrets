@@ -13,11 +13,11 @@ const Home = () => {
   useEffect(() => {
     const fetchSecrets = async () => {
       try {
-        console.log('fetching secrets')
+      
         const res = await fetch('/api/secrets/get')
 
         const secrets = await res.json()
-        console.log(secrets)
+  
 
         setAllSecrets(secrets.secrets)
       } catch (err) {

@@ -8,9 +8,51 @@ import bodyParser from 'body-parser'
 import nodemailer from 'nodemailer'
 import crypto from 'crypto'
 import Otp from '../database/models/otpModel.js'
+import GoogleUser from '../database/models/googleUsers.js'
 const resetTokens = {}
 const router = express.Router()
 
+router.post('/api/auth/googleLogin', async (req, res) => {
+  const data = await req.body
+
+  try {
+    connectTodatabase()
+    const userExists = await GoogleUser.findOne({ email: data.email })
+    if (userExists) {
+      const token = jwt.sign(
+        { email: userExists.email, id: userExists._id },
+        process.env.SECRET_KEY,
+        { expiresIn: '1h' }
+      )
+      res.cookie('jwtoken', token, {
+        expires: new Date(Date.now() + 25892000000),
+        httpOnly: true
+      })
+
+      res
+        .status(200)
+        .json({ message: 'Successfully signed in', user: userExists })
+    } else {
+      const user = new GoogleUser({
+        name: data.name,
+        email: data.email
+      })
+      await user.save()
+      const token = jwt.sign(
+        { email: user.email, id: user._id },
+        process.env.SECRET_KEY,
+        { expiresIn: '1h' }
+      )
+      res.cookie('jwtoken', token, {
+        expires: new Date(Date.now() + 25892000000),
+        httpOnly: true
+      })
+      res.status(200).json({ message: 'Successfully signed in', user: user })
+    }
+  } catch (err) {
+    console.log(err)
+  }
+})
 
 const checker = async (req, res, next) => {
   await connectTodatabase()
@@ -104,12 +146,22 @@ router.post('/api/reset-password', async (req, res) => {
 router.post('/api/secrets/post', checker, async (req, res) => {
   await connectTodatabase()
   const data = await req.body
+  // console.log(data)
 
   try {
     const id = data.user
     let user = await User.findById(id)
+    let googleuser = await GoogleUser.findById(id)
+    if (user && googleuser) {
+      googleuser = await GoogleUser.findByIdAndDelete(id)
+    }
+    if (googleuser?.secretsCount >= 1) {
+      return res.status(422).json({ error: 'You have exceeded the limit' })
+    } else {
+      googleuser = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 1 })
+    }
 
-    if (user.secretsCount >= 1) {
+    if (user?.secretsCount >= 1) {
       return res.status(422).json({ error: 'You have exceeded the limit' })
     }
     const secret = new Secret({
@@ -122,12 +174,18 @@ router.post('/api/secrets/post', checker, async (req, res) => {
     const aaa = await secret.save()
     await user.save()
 
-    if (user.secretsCount === 0) {
+    if (user?.secretsCount === 0) {
       user = await User.findByIdAndUpdate(id, { secretsCount: 1 })
     } else {
       user = await User.findByIdAndUpdate(id, { secretsCount: 0 })
     }
-    await user.save()
+    if (googleuser?.secretsCount === 0) {
+      user = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 1 })
+    } else {
+      user = await GoogleUser.findByIdAndUpdate(id, { secretsCount: 0 })
+    }
+    await user?.save()
+    await googleuser?.save()
 
     // await Secret.create(data.secrets)
     if (!aaa) return res.status(422).json({ error: 'Secrets not posted' })

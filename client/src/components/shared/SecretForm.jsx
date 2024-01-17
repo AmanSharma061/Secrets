@@ -74,6 +74,11 @@ const SecretForm = () => {
           theme: 'light'
         })
       }
+      const item = localStorage.getItem('token')
+      const ff=item && JSON.parse(item)
+        
+
+
 
       const response = await fetch('/api/secrets/post', {
         method: 'POST',
